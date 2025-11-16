@@ -1,0 +1,30 @@
+<div class="picker-container" *ngIf="config">
+  <div class="picker-header">
+    <h3>{{ config.title }}</h3>
+    <span class="selection-count">{{ selectedCount }} selected</span>
+  </div>
+
+  <div class="picker-table">
+    <table>
+      <thead>
+        <tr>
+          <th class="checkbox-col"></th>
+          <th>Name</th>
+          <th>ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let option of config.options" [class.selected]="option.selected">
+          <td class="checkbox-col">
+            <input
+              type="checkbox"
+              [checked]="option.selected"
+              (change)="onOptionToggle(option)">
+          </td>
+          <td>{{ option.name }}</td>
+          <td class="id-col">{{ option.id }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
