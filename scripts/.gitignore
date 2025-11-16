@@ -1,0 +1,14 @@
+# Never commit the actual config file (contains secrets)
+config.yml
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# Logs
+*.log

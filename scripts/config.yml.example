@@ -1,0 +1,27 @@
+# GitLab Triage Bot Configuration
+# Copy this file to config.yml and fill in your values
+
+# GitLab instance URL
+gitlab_url: "https://gitlab.example.com"
+
+# Personal access token with API permissions
+# Create at: Settings -> Access Tokens -> Add new token
+# Required scopes: api, read_api, write_repository
+private_token: "your-private-token-here"
+
+# Project ID (found in Project Settings -> General)
+project_id: 123
+
+# Triage settings
+stale_days: 90          # Days of inactivity before posting warning
+warning_days: 14        # Days to wait after warning before closing
+
+# Phase labels (from ISSUE-MANAGEMENT.md)
+phase_labels:
+  - "phase-current"
+  - "phase-next"
+  - "phase-future"
+
+# Bot labels
+bot_label: "bot-triage"           # Added to all bot-modified issues
+warning_label: "stale-warning"    # Added to issues with stale warning

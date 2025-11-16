@@ -1,0 +1,31 @@
+# Development Dockerfile for Auto Discovery Frontend
+# Includes Angular CLI for hot module reloading
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install Angular CLI 14 globally
+RUN npm install -g @angular/cli@14
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Expose dev server port
+EXPOSE 4200
+
+# Keep container running
+CMD ["tail", "-f", "/dev/null"]
+
+# Usage:
+# docker run -d --name auto-discovery-dev \
+#   --network host \
+#   -v $(pwd)/frontend:/app:z \
+#   -w /app \
+#   auto-discovery-frontend:dev
+#
+# Then start dev server:
+# docker exec -it auto-discovery-dev npm start -- --host 0.0.0.0 --port 4200

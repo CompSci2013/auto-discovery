@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auto-discovery-specs-api
+  namespace: auto-discovery
+  labels:
+    app: auto-discovery-specs-api
+    tier: backend
+    service: specs
+spec:
+  type: ClusterIP
+  selector:
+    app: auto-discovery-specs-api
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http

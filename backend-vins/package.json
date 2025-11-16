@@ -1,0 +1,22 @@
+{
+  "name": "auto-discovery-vins-api",
+  "version": "1.0.0",
+  "description": "Auto Discovery VINs API - Vehicle inventory instances service",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": ["auto-discovery", "vehicles", "vins", "inventory", "api", "elasticsearch"],
+  "author": "Halo Labs",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "@elastic/elasticsearch": "^8.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

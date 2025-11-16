@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auto-discovery-vins-api
+  namespace: auto-discovery
+  labels:
+    app: auto-discovery-vins-api
+    tier: backend
+    service: vins
+    version: v1.0.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auto-discovery-vins-api
+  template:
+    metadata:
+      labels:
+        app: auto-discovery-vins-api
+        tier: backend
+        service: vins
+        version: v1.0.0
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: thor
+      containers:
+      - name: vins-api
+        image: localhost/auto-discovery-vins-api:v1.0.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: ELASTICSEARCH_URL
+          value: "http://elasticsearch.data.svc.cluster.local:9200"
+        - name: ELASTICSEARCH_INDEX
+          value: "autos-vins"
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3001"
+        - name: SERVICE_NAME
+          value: "vins-api"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

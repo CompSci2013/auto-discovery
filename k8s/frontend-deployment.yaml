@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auto-discovery-frontend
+  namespace: auto-discovery
+  labels:
+    app: auto-discovery-frontend
+    tier: frontend
+    version: v1.0.0
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auto-discovery-frontend
+  template:
+    metadata:
+      labels:
+        app: auto-discovery-frontend
+        tier: frontend
+        version: v1.0.0
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: thor
+      containers:
+      - name: frontend
+        image: localhost/auto-discovery-frontend:v1.0.0
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"

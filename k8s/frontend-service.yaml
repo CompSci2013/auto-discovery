@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: auto-discovery-frontend
+  namespace: auto-discovery
+  labels:
+    app: auto-discovery-frontend
+    tier: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: auto-discovery-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
