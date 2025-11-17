@@ -74,7 +74,14 @@ All specifications are in the [`specs/`](./specs/) directory.
 1. **[specs/README.md](./specs/README.md)** - Specification index and conventions
 2. **[specs/01-architectural-analysis.md](./specs/01-architectural-analysis.md)** - System architecture, technology decisions
 3. **[specs/02-api-contracts-data-models.md](./specs/02-api-contracts-data-models.md)** - API endpoints, request/response formats
-4. **[specs/04-state-management-specification.md](./specs/04-state-management-specification.md)** - URL-first state management pattern
+4. **[docs/INFRASTRUCTURE-ANALYSIS.md](./INFRASTRUCTURE-ANALYSIS.md)** - **Backend API Reference**: Complete endpoint documentation with examples
+   - Elasticsearch indices (`autos-unified`, `autos-vins`)
+   - Specs API endpoints (manufacturer-model combinations, vehicle details, filter options)
+   - VINs API endpoints (VIN listings, vehicle-specific instances)
+   - Auth Service endpoints (login, verify, user management)
+   - Kubernetes deployment configuration
+   - Known issues and workarounds
+5. **[specs/04-state-management-specification.md](./specs/04-state-management-specification.md)** - URL-first state management pattern
 
 ### Feature Specifications (Read as Needed)
 
@@ -240,9 +247,10 @@ cp config.yml.example config.yml
 ### "I need to implement a new feature"
 
 1. Read relevant spec in [`specs/`](./specs/)
-2. Review [CONTRIBUTING.md](./CONTRIBUTING.md) for coding standards
-3. Create GitLab issue using template from [WORKFLOW.md](./WORKFLOW.md#gitlab-issue-template)
-4. Follow [WORKFLOW-QUICK-REFERENCE.md](./WORKFLOW-QUICK-REFERENCE.md), "I'm starting a new task"
+2. Check backend API endpoints in [docs/INFRASTRUCTURE-ANALYSIS.md](./INFRASTRUCTURE-ANALYSIS.md) or [CLAUDE.md](../CLAUDE.md#api-integration)
+3. Review [CONTRIBUTING.md](./CONTRIBUTING.md) for coding standards
+4. Create GitLab issue using template from [WORKFLOW.md](./WORKFLOW.md#gitlab-issue-template)
+5. Follow [WORKFLOW-QUICK-REFERENCE.md](./WORKFLOW-QUICK-REFERENCE.md), "I'm starting a new task"
 
 ### "I need to review code"
 
@@ -256,11 +264,19 @@ cp config.yml.example config.yml
 2. Review [CONTRIBUTING.md](./CONTRIBUTING.md), Section "Testing"
 3. Check coverage targets (75%+ overall)
 
+### "I need to understand the backend API"
+
+1. Quick reference: [CLAUDE.md](../CLAUDE.md#api-integration) - API endpoint summary
+2. Detailed reference: [docs/INFRASTRUCTURE-ANALYSIS.md](./INFRASTRUCTURE-ANALYSIS.md) - Complete backend documentation
+3. Specification: [specs/02-api-contracts-data-models.md](./specs/02-api-contracts-data-models.md)
+4. Authentication: [specs/auth/authentication-service.md](./specs/auth/authentication-service.md)
+
 ### "I need to deploy"
 
-1. Read relevant K8s manifests in [`k8s/`](./k8s/)
-2. Review deployment guide (when created)
-3. Verify environment variables
+1. Review backend endpoints: [docs/INFRASTRUCTURE-ANALYSIS.md](./INFRASTRUCTURE-ANALYSIS.md)
+2. Read relevant K8s manifests in [`k8s/`](./k8s/)
+3. Review deployment guide (when created)
+4. Verify environment variables and microservices configuration
 
 ### "I'm blocked / need help"
 

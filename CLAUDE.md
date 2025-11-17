@@ -325,33 +325,304 @@ export const environment = {
 };
 ```
 
-**Specs API Endpoints** (`/api/specs/v1/*`):
+### Specs API Endpoints (`/api/specs/v1/*`)
 
-Specification: [02 - API Contracts](./specs/02-api-contracts-data-models.md)
+Specification: [02 - API Contracts](./specs/02-api-contracts-data-models.md) | [Infrastructure Analysis](./docs/INFRASTRUCTURE-ANALYSIS.md)
 
+**Data Source**: Queries `autos-unified` Elasticsearch index (4,887 vehicle specifications)
+
+#### 1. Manufacturer-Model Combinations
 ```typescript
-GET /api/specs/v1/manufacturer-model-combinations?page=1&size=20
-GET /api/specs/v1/vehicles/details?manufacturer=Ford&yearMin=2020
+GET /api/specs/v1/manufacturer-model-combinations?page=1&size=50&search=ford
+```
+**Purpose**: Get manufacturer-model combinations with counts
+**Query Parameters**:
+- `page` (default: 1)
+- `size` (default: 50, max: 100)
+- `search` (optional): Search manufacturer/model/body_class
+- `manufacturer` (optional): Filter by specific manufacturer
+
+**Response** (Nested structure with client-side pagination):
+```json
+{
+  "total": 150,
+  "page": 1,
+  "size": 50,
+  "totalPages": 3,
+  "data": [
+    {
+      "manufacturer": "Ford",
+      "count": 665,
+      "models": [
+        { "model": "F-150", "count": 23 },
+        { "model": "Mustang", "count": 18 }
+      ]
+    }
+  ]
+}
+```
+
+#### 2. Vehicle Details (Primary Data Endpoint)
+```typescript
+GET /api/specs/v1/vehicles/details?manufacturer=Ford&yearMin=2020&page=1&size=20
+```
+**Purpose**: Get detailed vehicle specifications with filtering, sorting, and statistics
+**Query Parameters**:
+- **Selection**: `models` (comma-separated `Manufacturer:Model` pairs)
+- **Pagination**: `page`, `size`
+- **Search filters**: `manufacturerSearch`, `modelSearch`, `bodyClassSearch`, `dataSourceSearch` (partial match)
+- **Exact filters**: `manufacturer`, `model`, `yearMin`, `yearMax`, `bodyClass`, `dataSource`
+- **Highlight filters**: `h_yearMin`, `h_yearMax`, `h_manufacturer`, `h_modelCombos`, `h_bodyClass`
+- **Sorting**: `sortBy`, `sortOrder`
+
+**Response** (Server-side pagination with statistics):
+```json
+{
+  "total": 1234,
+  "page": 1,
+  "size": 20,
+  "totalPages": 62,
+  "query": { "modelCombos": [...], "filters": {...} },
+  "results": [
+    {
+      "vehicle_id": "nhtsa-ford-f-150-2020",
+      "manufacturer": "Ford",
+      "model": "F-150",
+      "year": 2020,
+      "body_class": "Pickup",
+      "data_source": "nhtsa_vpic_large_sample",
+      "instance_count": 147
+    }
+  ],
+  "statistics": {
+    "byManufacturer": { "Ford": { "total": 523, "highlighted": 89 } },
+    "modelsByManufacturer": { "Ford": { "F-150": { "total": 147, "highlighted": 45 } } },
+    "byYearRange": { "2020": { "total": 234, "highlighted": 67 } },
+    "byBodyClass": { "Pickup": { "total": 290, "highlighted": 89 } },
+    "totalCount": 1234
+  }
+}
+```
+
+#### 3. Filter Options
+```typescript
+GET /api/specs/v1/filters/:fieldName?search=term&limit=1000
+```
+**Purpose**: Get distinct filter values for dropdowns/pickers
+**Supported Fields**:
+- `manufacturers` → Returns: `{ manufacturers: string[] }`
+- `models` → Returns: `{ models: string[] }`
+- `body-classes` → Returns: `{ body_classes: string[] }`
+- `data-sources` → Returns: `{ data_sources: string[] }`
+- `year-range` → Returns: `{ min: 1908, max: 2024 }`
+
+**Query Parameters**:
+- `search` (optional): Prefix matching for filtering
+- `limit` (default: 1000, max: 5000)
+
+**Example**:
+```typescript
+// Get all body classes
 GET /api/specs/v1/filters/body-classes
-GET /api/specs/v1/filters/manufacturers
-GET /api/specs/v1/filters/models
+
+// Response:
+{
+  "success": true,
+  "body_classes": ["Sedan", "SUV", "Pickup", "Coupe", ...]
+}
 ```
 
-**VINs API Endpoints** (`/api/vins/v1/*`):
+### VINs API Endpoints (`/api/vins/v1/*`)
+
+**Data Source**: Queries `autos-vins` Elasticsearch index (55,463 VIN records)
+
+#### 1. All VINs (List)
 ```typescript
-GET /api/vins/v1/vins?manufacturer=Ford
-GET /api/vins/v1/vehicles/{vehicleId}/instances
+GET /api/vins/v1/vins?manufacturer=Ford&yearMin=2020&page=1&size=20
+```
+**Purpose**: Get list of individual vehicle instances (VINs)
+**Query Parameters**:
+- **Pagination**: `page`, `size`
+- **Filters**: `manufacturer`, `model`, `yearMin`, `yearMax`, `bodyClass`, `mileageMin`, `mileageMax`, `valueMin`, `valueMax`, `vin`, `conditionDescription`, `registeredState`, `exteriorColor`
+- **Sorting**: `sortBy`, `sortOrder`
+
+**Response**:
+```json
+{
+  "total": 55463,
+  "instances": [
+    {
+      "vin": "1PLBP40E9CF100000",
+      "manufacturer": "Plymouth",
+      "model": "Horizon",
+      "year": 1982,
+      "body_class": "Hatchback",
+      "vehicle_id": "synth-plymouth-horizon-1982",
+      "condition_rating": 3,
+      "condition_description": "Good",
+      "mileage": 523377,
+      "registered_state": "PA",
+      "estimated_value": 33715
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "size": 20,
+    "totalPages": 2774,
+    "hasMore": true
+  }
+}
 ```
 
-**Auth Service Endpoints** (`/api/auth/v1/*`):
+#### 2. Vehicle-Specific VINs
+```typescript
+GET /api/vins/v1/vehicles/:vehicleId/instances?page=1&pageSize=20
+```
+**Purpose**: Get all VIN instances for a specific vehicle specification
+**Path Parameters**:
+- `vehicleId`: Vehicle specification ID (e.g., `nhtsa-ford-f-150-2020`)
+
+**Query Parameters**:
+- `page`, `pageSize`
+
+**Response**:
+```json
+{
+  "vehicle_id": "nhtsa-ford-f-150-2020",
+  "instance_count": 147,
+  "instances": [
+    { "vin": "...", "condition_rating": 4, ... }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 8,
+    "hasMore": true
+  }
+}
+```
+
+### Auth Service Endpoints (`/api/auth/v1/*`)
+
+**Purpose**: User authentication and authorization (JWT-based)
+**Specification**: [Authentication Service](./specs/auth/authentication-service.md)
+
+#### 1. Login
 ```typescript
 POST /api/auth/v1/login
-GET  /api/auth/v1/user
-POST /api/auth/v1/verify
-POST /api/auth/v1/logout
+Content-Type: application/json
+
+{
+  "username": "user@example.com",
+  "password": "securePassword123"
+}
+```
+**Response**:
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "user-123",
+    "username": "user@example.com",
+    "role": "analyst",
+    "domains": ["ford", "toyota"]
+  }
+}
 ```
 
-**Response Format**: Paginated with `results`, `total`, `page`, `size`, `totalPages`
+#### 2. Verify Token
+```typescript
+POST /api/auth/v1/verify
+Authorization: Bearer <token>
+```
+**Response**:
+```json
+{
+  "valid": true,
+  "user": { "id": "...", "username": "...", "role": "..." }
+}
+```
+
+#### 3. Get Current User
+```typescript
+GET /api/auth/v1/user
+Authorization: Bearer <token>
+```
+
+#### 4. Logout
+```typescript
+POST /api/auth/v1/logout
+Authorization: Bearer <token>
+```
+
+---
+
+### Response Formats
+
+**Standard Success Response**:
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**Paginated Response**:
+```json
+{
+  "results": [...],
+  "total": 1234,
+  "page": 1,
+  "size": 20,
+  "totalPages": 62
+}
+```
+
+**Error Response**:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid query parameters",
+    "details": { ... }
+  }
+}
+```
+
+---
+
+### Important Implementation Notes
+
+1. **Elasticsearch Indices**:
+   - `autos-unified`: 4,887 vehicle specifications
+   - `autos-vins`: 55,463 VIN records
+
+2. **Microservices Architecture**:
+   - Each service runs independently on different ports
+   - Kubernetes ingress routes by path prefix
+   - Services: Specs API (port 3000), VINs API (port 3001), Auth (port 3002)
+
+3. **Data Joins**:
+   - `/vehicles/details` joins `autos-unified` with `autos-vins` for instance counts
+   - Denormalized fields in VINs index for performance
+
+4. **Pagination Modes**:
+   - **Server-side**: `/vehicles/details`, `/vins/vins` (handles large result sets)
+   - **Client-side**: `/manufacturer-model-combinations` (all data loaded, paginated in frontend)
+
+5. **Statistics & Highlighting**:
+   - `/vehicles/details` returns segmented statistics (total vs. highlighted)
+   - Highlight filters (`h_*`) used for chart interactions
+
+6. **Known Issues** (see [Infrastructure Analysis](./docs/INFRASTRUCTURE-ANALYSIS.md)):
+   - Body class filter lacks counts (returns `string[]` instead of `{ value, count }[]`)
+   - Manufacturer-model API uses nested structure instead of flat list
+
+---
+
+**Full Documentation**: See [docs/INFRASTRUCTURE-ANALYSIS.md](./docs/INFRASTRUCTURE-ANALYSIS.md) for detailed infrastructure setup, Elasticsearch configuration, and complete endpoint specifications.
 
 ---
 
