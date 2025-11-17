@@ -1,6 +1,6 @@
 <div class="picker-container" *ngIf="config">
   <div class="picker-header">
-    <h3>{{ config.title }}</h3>
+    <h3>{{ config.displayName }}</h3>
     <span class="selection-count">{{ selectedCount }} selected</span>
   </div>
 
@@ -9,20 +9,20 @@
       <thead>
         <tr>
           <th class="checkbox-col"></th>
-          <th>Name</th>
-          <th>ID</th>
+          <th *ngFor="let col of config.columns">{{ col.label }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let option of config.options" [class.selected]="option.selected">
+        <tr *ngFor="let row of data" [class.selected]="isRowSelected(row)">
           <td class="checkbox-col">
             <input
               type="checkbox"
-              [checked]="option.selected"
-              (change)="onOptionToggle(option)">
+              [checked]="isRowSelected(row)"
+              (change)="onRowToggle(row)">
           </td>
-          <td>{{ option.name }}</td>
-          <td class="id-col">{{ option.id }}</td>
+          <td *ngFor="let col of config.columns">
+            {{ getCellValue(row, col.key) }}
+          </td>
         </tr>
       </tbody>
     </table>
